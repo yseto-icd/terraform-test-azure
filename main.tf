@@ -87,3 +87,39 @@ resource "azurerm_application_insights" "appin02" {
   resource_group_name = azurerm_resource_group.rg.name
   application_type = "web"
 }
+
+resource "azurerm_app_service_plan" "app03" {
+  name = "app_service_plan03"
+  location = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  kind = "Linux"
+  reserved = true
+  sku {
+    tier = "Basic"
+    size = "S1"
+  }
+}
+
+resource "azurerm_application_insights" "appin03" {
+  name = "test-for-appin-appi03"
+  location = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  application_type = "web"
+}
+
+resource "azurerm_app_service" "app03" {
+  name = "test-for-appin-webapp-03"
+  location = azurerm_resource_group.rg.location
+  app_service_plan_id = azurerm_app_service_plan.app03.id
+  resource_group_name = azurerm_resource_group.rg.name
+  site_config {
+    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello:without-instrumentationkey"
+  }
+  app_settings = {
+    "DOCKER_REGISTRY_SERVER_URL" = "https://${azurerm_container_registry.acr.login_server}"
+    "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
+    "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
+    "WEBSITES_PORT" = "80"
+    "APPLICATION_INSIGHTS_IKEY" = azurerm_application_insights.appin03.instrumentation_key
+  }
+}
