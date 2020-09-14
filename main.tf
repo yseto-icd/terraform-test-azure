@@ -30,27 +30,28 @@ resource "azurerm_app_service_plan" "app" {
   }
 }
 
+resource "azurerm_application_insights" "appin01" {
+  name = "test-for-appin-appi01"
+  location = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  application_type = "web"
+}
+
 resource "azurerm_app_service" "app01" {
   name = "test-for-appin-webapp-01"
   location = azurerm_resource_group.rg.location
   app_service_plan_id = azurerm_app_service_plan.app.id
   resource_group_name = azurerm_resource_group.rg.name
   site_config {
-    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello:only-logback"
+    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello1:v1.0"
   }
   app_settings = {
     "DOCKER_REGISTRY_SERVER_URL" = "https://${azurerm_container_registry.acr.login_server}"
     "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
-    "WEBSITES_PORT" = "80"
+    "WEBSITES_PORT" = "8080"
+    "APPLICATION_INSIGHTS_IKEY" = azurerm_application_insights.appin01.instrumentation_key
   }
-}
-
-resource "azurerm_application_insights" "appin01" {
-  name = "test-for-appin-appi01"
-  location = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  application_type = "web"
 }
 
 resource "azurerm_app_service_plan" "app02" {
@@ -65,22 +66,6 @@ resource "azurerm_app_service_plan" "app02" {
   }
 }
 
-resource "azurerm_app_service" "app02" {
-  name = "test-for-appin-webapp-02"
-  location = azurerm_resource_group.rg.location
-  app_service_plan_id = azurerm_app_service_plan.app02.id
-  resource_group_name = azurerm_resource_group.rg.name
-  site_config {
-    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello:logback-with-xml"
-  }
-  app_settings = {
-    "DOCKER_REGISTRY_SERVER_URL" = "https://${azurerm_container_registry.acr.login_server}"
-    "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
-    "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
-    "WEBSITES_PORT" = "80"
-  }
-}
-
 resource "azurerm_application_insights" "appin02" {
   name = "test-for-appin-appi02"
   location = azurerm_resource_group.rg.location
@@ -88,38 +73,19 @@ resource "azurerm_application_insights" "appin02" {
   application_type = "web"
 }
 
-resource "azurerm_app_service_plan" "app03" {
-  name = "app_service_plan03"
+resource "azurerm_app_service" "app02" {
+  name = "test-for-appin-webapp-02"
   location = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  kind = "Linux"
-  reserved = true
-  sku {
-    tier = "Basic"
-    size = "S1"
-  }
-}
-
-resource "azurerm_application_insights" "appin03" {
-  name = "test-for-appin-appi03"
-  location = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  application_type = "web"
-}
-
-resource "azurerm_app_service" "app03" {
-  name = "test-for-appin-webapp-03"
-  location = azurerm_resource_group.rg.location
-  app_service_plan_id = azurerm_app_service_plan.app03.id
+  app_service_plan_id = azurerm_app_service_plan.app02.id
   resource_group_name = azurerm_resource_group.rg.name
   site_config {
-    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello:without-instrumentationkey"
+    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/hello2:v1.0"
   }
   app_settings = {
     "DOCKER_REGISTRY_SERVER_URL" = "https://${azurerm_container_registry.acr.login_server}"
     "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
-    "WEBSITES_PORT" = "80"
-    "APPLICATION_INSIGHTS_IKEY" = azurerm_application_insights.appin03.instrumentation_key
+    "WEBSITES_PORT" = "8080"
+    "APPLICATION_INSIGHTS_IKEY" = azurerm_application_insights.appin02.instrumentation_key
   }
 }
